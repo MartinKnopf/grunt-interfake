@@ -1,0 +1,42 @@
+{
+  "name": "grunt-interfake",
+  "description": "Starting an interfake server with grunt.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/Horsed/grunt-interfake",
+  "author": {
+    "name": "Martin Knopf",
+    "email": "-",
+    "url": "horsed.github.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Horsed/grunt-interfake.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Horsed/grunt-interfake/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/Horsed/grunt-interfake/blob/master/LICENSE-MIT"
+    }
+  ],
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt": "~0.4.4"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.4"
+  },
+  "keywords": [
+    "gruntplugin"
+  ]
+}
