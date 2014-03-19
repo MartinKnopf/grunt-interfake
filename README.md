@@ -25,11 +25,33 @@ In your project's Gruntfile, add a section named `interfake` to the data object 
 ```js
 grunt.initConfig({
   interfake: {
-    options: {
-      // Task-specific options go here.
+    fixture1: {
+      options: {
+        port: 9000,                         // default: 3000
+        endpoints: [{                       // endpoints
+          "request": {
+            "url": "/whattimeisit",
+            "method": "get"
+          },
+          "response": {
+            "code": 200,
+            "body": {
+              "theTime": "Adventure Time!",
+              "starring": [
+                "Finn",
+                "Jake"
+              ],
+              "location": "ooo"
+            }
+          }
+        }]
+      },
     },
-    your_target: {
-      // Target-specific file lists and/or options go here.
+    fixture2: {
+      options: {
+        port: 9000,                         // default: 3000
+      },
+      src: ['endpoints.json']               // has to be a JSON file
     },
   },
 });
@@ -37,49 +59,79 @@ grunt.initConfig({
 
 ### Options
 
-#### options.separator
-Type: `String`
-Default value: `',  '`
+#### options.port
+Type: `Integer`
+Default value: `9000`
 
-A string value that is used to do something with whatever.
+The port that the interfake server should be started at.
 
-#### options.punctuation
-Type: `String`
-Default value: `'.'`
+#### options.endpoints
+Type: `Object`
+Default value: see [example endpoints](https://github.com/basicallydan/interfake#example-more-examples-1)
 
-A string value that is used to do something else with whatever else.
-
-### Usage Examples
-
-#### Default Options
-In this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`
+### Usage example as fake backend server
+In this example, interfake will be used as a backend server in a test setup. A proxy will forward all requests matching a regex pattern to the interfake server.
 
 ```js
-grunt.initConfig({
-  interfake: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
-```
+var httpProxy = require('http-proxy');
 
-#### Custom Options
-In this example, custom options are used to do something else with whatever else. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result in this case would be `Testing: 1 2 3 !!!`
+var proxy = new httpProxy.RoutingProxy();
 
-```js
+// forward requests to fake backend
+var proxyFunction = function (req, res, next) {
+  var match = req.url.match(/.*\/some-part-of-my-url\/.*/);
+  if (match) {
+    proxy.proxyRequest(req, res, {
+      host: 'localhost',
+      port: 9000
+    });
+  } else {
+    next();
+  }
+};
+
 grunt.initConfig({
+
+  // fake backend
   interfake: {
     options: {
-      separator: ': ',
-      punctuation: ' !!!',
+      port: 9000
     },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
+    src: ['endpoints.json'],
+  },
+
+  // web server for test environment
+  connect: {
+    options: {
+      port: 8080,
+      hostname: 'localhost'
     },
+    test: {
+      options: {
+        middleware: function (connect) {
+          return [
+            proxyFunction,
+            mountFolder(connect, 'static')
+          ];
+        }
+      }
+    }
+  },
+
+  // starts the interfake server and a web server
+  concurrent: {
+    testWithInterfake: [
+      'interfake',
+      'connect:test:keepalive'
+    ]
   },
 });
+
+grunt.loadNpmTasks('grunt-interfake');
+grunt.loadNpmTasks('grunt-contrib-connect');
+grunt.loadNpmTasks('grunt-concurrent');
+
+grunt.registerTask('integrate', ['concurrent:testWithInterfake']);
 ```
 
 ## Contributing

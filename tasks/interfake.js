@@ -14,16 +14,19 @@ module.exports = function(grunt) {
   // creation: http://gruntjs.com/creating-tasks
 
   grunt.registerMultiTask('interfake', 'Starting an interfake server with grunt.', function() {
+
     // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({
-      punctuation: '.',
-      separator: ', '
+      port: 3000
     });
+
+    var Interfake = require('interfake');
+    var interfake = new Interfake();
 
     // Iterate over all specified file groups.
     this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
+      
+      f.src.filter(function(filepath) {
         // Warn on and remove invalid source files (if nonull was set).
         if (!grunt.file.exists(filepath)) {
           grunt.log.warn('Source file "' + filepath + '" not found.');
@@ -32,19 +35,19 @@ module.exports = function(grunt) {
           return true;
         }
       }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
-
-      // Handle options.
-      src += options.punctuation;
-
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
-
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
+        interfake.loadFile(filepath);
+      });
     });
+    
+    if(options.endpoints)
+      for(var i = 0, len = options.endpoints.length; i < len; i++)
+        interfake.createRoute(options.endpoints[i]);
+
+    grunt.log.ok('Starting interfake server at port ' + options.port);
+
+    interfake.listen(options.port);
+    
+    var done = this.async();
   });
 
 };

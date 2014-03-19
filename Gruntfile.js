@@ -28,22 +28,59 @@ module.exports = function(grunt) {
       tests: ['tmp'],
     },
 
+    concurrent: {
+      testWithInterfake: [
+        'interfake:fixture1',
+        'connect:server:keepalive'
+      ]
+    },
+
     // Configuration to be run (and then tested).
     interfake: {
-      default_options: {
+      fixture1: {
         options: {
-        },
-        files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123'],
+          port: 9000,
+          endpoints: [{
+            "request": {
+              "url": "/whattimeisit",
+              "method": "get"
+            },
+            "response": {
+              "code": 200,
+              "body": {
+                "theTime": "Adventure Time!",
+                "starring": [
+                  "Finn",
+                  "Jake"
+                ],
+                "location": "ooo"
+              }
+            }
+          }]
         },
       },
-      custom_options: {
+      fixture2: {
         options: {
-          separator: ': ',
-          punctuation: ' !!!',
+          port: 9001,
         },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123'],
+        src: ['tmp/endpoints.json'],
+      },
+    },
+
+    // 
+    connect: {
+      server: {
+        options: {
+          port: 8088,
+          hostname: 'localhost',
+          middleware: function(connect, options, middlewares) {
+            // inject a custom middleware into the array of default middlewares
+            middlewares.push(function(req, res, next) {
+              res.end('Hello, world from port #' + options.port + '!');
+            });
+
+            return middlewares;
+          },
         },
       },
     },
@@ -62,6 +99,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
+  grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-concurrent');
 
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
@@ -69,5 +108,9 @@ module.exports = function(grunt) {
 
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);
+
+  // By default, lint and run all tests.
+  grunt.registerTask('ggg', ['concurrent:testWithInterfake']);
+  grunt.registerTask('fff', ['connect:server:keepalive']);
 
 };
