@@ -42,6 +42,6 @@
     "gruntplugin"
   ],
   "dependencies": {
-    "interfake": "~1.2.0"
+    "interfake": "~1.8.2"
   }
 }
