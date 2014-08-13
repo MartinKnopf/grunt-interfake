@@ -79,7 +79,7 @@ var proxy = new httpProxy.RoutingProxy();
 
 // forward requests to fake backend
 var proxyFunction = function (req, res, next) {
-  var match = req.url.match(/.*\/some-part-of-my-url\/.*/);
+  var match = req.url.match(/.*/users/xy12/.*/);
   if (match) {
     proxy.proxyRequest(req, res, {
       host: 'localhost',
